@@ -15,13 +15,13 @@ int main(int argc, char **argv) {
     }
     {
         std::array<double, 8> arr;
-        ASSERT(arr.size() == 8*sizeof(double), "Fill in the correct value.");
-        ASSERT(sizeof(arr) == sizeof(unsigned long long)+sizeof(double*), "Fill in the correct value.");
+        ASSERT(arr.size() == 8, "Fill in the correct value.");
+        ASSERT(sizeof(arr) == 8*sizeof(double), "Fill in the correct value.");
     }
     {
         std::array<char, 21> arr{"Hello, InfiniTensor!"};
-        ASSERT(arr.size() == 21*sizeof(char), "Fill in the correct value.");
-        ASSERT(sizeof(arr) == sizeof(unsigned long long)+sizeof(char*), "Fill in the correct value.");
+        ASSERT(arr.size() == 21, "Fill in the correct value.");
+        ASSERT(sizeof(arr) == 21*sizeof(char), "Fill in the correct value.");
         ASSERT(std::strcmp(arr.data(), "Hello, InfiniTensor!") == 0, "Fill in the correct value.");
     }
     return 0;
