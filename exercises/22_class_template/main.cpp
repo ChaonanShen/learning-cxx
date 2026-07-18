@@ -1,5 +1,6 @@
 ﻿#include "../exercise.h"
 #include <cstring>
+#include <numeric>
 // READ: 类模板 <https://zh.cppreference.com/w/cpp/language/class_template>
 
 template<class T>
@@ -8,13 +9,33 @@ struct Tensor4D {
     T *data;
 
     Tensor4D(unsigned int const shape_[4], T const *data_) {
-        unsigned int size = 1;
         // TODO: 填入正确的 shape 并计算 size
+        unsigned int size = std::accumulate(shape_, shape_+4, 1, [](int a, int b) {
+            return a * b;
+        });
+        for (int i=0; i<4; i++) shape[i] = shape_[i];
         data = new T[size];
         std::memcpy(data, data_, size * sizeof(T));
     }
     ~Tensor4D() {
         delete[] data;
+    }
+
+    void print() {
+        unsigned int strides[4] = {shape[1]*shape[2]*shape[3], shape[2]*shape[3], shape[3], 1};
+        for (int i=0; i<shape[0]; i++) {
+            for (int j=0; j<shape[1]; j++) {
+                for (int k=0; k<shape[2]; k++) {
+                    for (int l=0; l<shape[3]; l++) {
+                        int idx = i*strides[0] + j*strides[1] + k*strides[2] + l*strides[3];
+                        std::cout << data[idx] << " ";
+                    }
+                    std::cout << std::endl;
+                }
+                std::cout << std::endl;
+            }
+            std::cout << std::endl;
+        }
     }
 
     // 为了保持简单，禁止复制和移动
@@ -28,6 +49,22 @@ struct Tensor4D {
     // 则 `this` 与 `others` 相加时，3 个形状为 `[1, 2, 1, 4]` 的子张量各自与 `others` 对应项相加。
     Tensor4D &operator+=(Tensor4D const &others) {
         // TODO: 实现单向广播的加法
+        unsigned int strides1[4] = {shape[1]*shape[2]*shape[3], shape[2]*shape[3], shape[3], 1};
+        unsigned int strides2[4] = {others.shape[1]*others.shape[2]*others.shape[3], others.shape[2]*others.shape[3], others.shape[3], 1};
+
+        for (int i=0; i<shape[0]; i++) {
+            for (int j=0; j<shape[1]; j++) {
+                for (int k=0; k<shape[2]; k++) {
+                    for (int l=0; l<shape[3]; l++) {
+                        int idxes[4] = {others.shape[0]==1?0:i, others.shape[1]==1?0:j, others.shape[2]==1?0:k, others.shape[3]==1?0:l};
+                        int idx1 = i*strides1[0] + j*strides1[1] + k*strides1[2] + l*strides1[3];
+                        int idx2 = idxes[0]*strides2[0] + idxes[1]*strides2[1] + idxes[2]*strides2[2] + idxes[3]*strides2[3];
+                        data[idx1] += others.data[idx2];
+                    }
+                }
+            }
+        }
+
         return *this;
     }
 };
@@ -48,6 +85,8 @@ int main(int argc, char **argv) {
         // clang-format on
         auto t0 = Tensor4D(shape, data);
         auto t1 = Tensor4D(shape, data);
+        t0.print();
+        t1.print();
         t0 += t1;
         for (auto i = 0u; i < sizeof(data) / sizeof(*data); ++i) {
             ASSERT(t0.data[i] == data[i] * 2, "Tensor doubled by plus its self.");
@@ -79,7 +118,10 @@ int main(int argc, char **argv) {
 
         auto t0 = Tensor4D(s0, d0);
         auto t1 = Tensor4D(s1, d1);
+        t0.print();
+        t1.print();
         t0 += t1;
+        t0.print();
         for (auto i = 0u; i < sizeof(d0) / sizeof(*d0); ++i) {
             ASSERT(t0.data[i] == 7.f, "Every element of t0 should be 7 after adding t1 to it.");
         }

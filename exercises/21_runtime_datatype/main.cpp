@@ -19,7 +19,7 @@ struct TaggedUnion {
 
 // TODO: 将这个函数模板化用于 sigmoid_dyn
 template <typename T>
-float sigmoid(T x) {
+T sigmoid(T x) {
     return 1 / (1 + std::exp(-x));
 }
 
