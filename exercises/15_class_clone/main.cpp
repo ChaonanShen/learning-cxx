@@ -28,7 +28,7 @@ public:
 
     // TODO: 实现析构器，释放缓存空间
     ~DynFibonacci() {
-        delete cache;
+        delete[] cache;
         cached = 0;
     }
 
